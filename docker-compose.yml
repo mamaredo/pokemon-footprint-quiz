@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: pokemon-footprint-quiz-db
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: test
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+      POSTGRES_HOST_AUTH_METHOD: 'trust'
+      TZ: "Asia/Tokyo"
+    ports:
+      - 5432:5432
+    volumes:
+      - "db-data:/var/lib/postgresql/data"
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: pokemon-footpring-quiz-swagger
+    environment:
+      - SWAGGER_URL=./swagger.yaml
+      - SWAGGER_JSON=/swagger/swagger.yaml
+    ports:
+      - 8080:8080
+    volumes:
+      - ./swagger/:/swagger
+volumes:
+  db-data:
