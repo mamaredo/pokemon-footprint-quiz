@@ -1,21 +1,25 @@
-import { PrismaClient } from '@prisma/client';
+import { prismaClient } from './lib/prisma';
+import { PokemonService } from './module/pokemon';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 async function main() {
-  const post = await prisma.post.update({
-    where: { id: 1 },
-    data: { published: true },
-  });
-  console.log(post);
+  // const pokemon = await prismaClient.pokemon.count({
+  //   where: { pokedex: 1 },
+  // });
+
+  // console.log(pokemon);
+  const pokemonService = new PokemonService();
+  pokemonService.init();
+  // console.log('hello');
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect();
+    await prismaClient.$disconnect();
   })
   .catch(async (e) => {
     console.error(e);
-    await prisma.$disconnect();
+    await prismaClient.$disconnect();
     process.exit(1);
   });
