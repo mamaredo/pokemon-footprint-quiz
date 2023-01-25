@@ -1,5 +1,6 @@
 import { prismaClient } from './lib/prisma';
 import { PokemonService } from './module/pokemon';
+import { PokemonRepository } from './module/pokemon/pokemon.repository';
 
 // const prisma = new PrismaClient();
 
@@ -9,7 +10,7 @@ async function main() {
   // });
 
   // console.log(pokemon);
-  const pokemonService = new PokemonService();
+  const pokemonService = new PokemonService(new PokemonRepository());
   pokemonService.init();
   // console.log('hello');
 }
