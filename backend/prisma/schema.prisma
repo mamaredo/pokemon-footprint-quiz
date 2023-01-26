@@ -8,8 +8,8 @@ datasource db {
 }
 
 model Pokemon {
-  pokedex   Int    @id
-  name      String @db.Char(10)
+  pokedex   String @id
+  name      String @db.VarChar(255)
   picture   String @db.VarChar(255)
   footprint String @db.VarChar(255)
 }

@@ -4,18 +4,16 @@ import { PokemonRepository } from './module/pokemon/pokemon.repository';
 
 // const prisma = new PrismaClient();
 
-async function main() {
-  // const pokemon = await prismaClient.pokemon.count({
-  //   where: { pokedex: 1 },
-  // });
+async function init() {
+  const pokemonRepository = new PokemonRepository();
+  const pokemonService = new PokemonService(pokemonRepository);
 
-  // console.log(pokemon);
-  const pokemonService = new PokemonService(new PokemonRepository());
-  pokemonService.init();
-  // console.log('hello');
+  await pokemonService.init();
+  await pokemonRepository.show();
+  await pokemonRepository.allDelete();
 }
 
-main()
+init()
   .then(async () => {
     await prismaClient.$disconnect();
   })

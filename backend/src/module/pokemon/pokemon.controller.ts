@@ -7,7 +7,7 @@ export class AppController {
   constructor(private readonly pokemonService: PokemonService) {}
 
   @Get(':pokedex')
-  getHello(@Param('pokedex') pokedex: number): string {
+  getHello(@Param('pokedex') pokedex: string): string {
     console.log('pokedex', pokedex);
     return;
   }

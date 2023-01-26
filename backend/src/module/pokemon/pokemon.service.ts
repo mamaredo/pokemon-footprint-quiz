@@ -1,62 +1,52 @@
-import { prismaClient } from 'src/lib/prisma';
 import fetch from 'node-fetch';
 import { getColorFromURL } from 'color-thief-node';
 import { join } from 'path';
 import { PokemonRepository } from './pokemon.repository';
-import { readdir, readFileSync } from 'fs';
+import { readdir } from 'fs';
+import { convertImageToBase64, getAssetsPath, getImageName } from '../../util';
+import { Prisma } from '@prisma/client';
 
 type FootprintsColor = [4, 4, 4];
 type NotFootprintsColor = [255, 255, 255];
 
 export class PokemonService {
-  constructor(pokemonRepository: PokemonRepository) {}
+  constructor(private readonly pokemonRepository: PokemonRepository) {}
 
   async init() {
-    // const res = await fetch('https://pokeapi.co/api/v2/pokemon/1');
-    // const {
-    //   id,
-    //   name,
-    //   sprites: { front_default },
-    // } = await res.json();
-    // console.log({
-    //   id,
-    //   name,
-    //   front_default,
-    // });
-
-    /**
-     * colorの取得
-     * 4 黒, 255 白かの判定
-     * 黒ならその番号のポケモン情報を取得, 白なら次のroopへ
-     */
+    const result = [];
     readdir(join(__dirname, '/../../../assets'), async (err, fileList) => {
       if (err) return;
 
       for (const file of fileList) {
+        const assetsPath = getAssetsPath(file);
         const colorPallet: FootprintsColor | NotFootprintsColor =
-          await getColorFromURL(join(__dirname, `/../../../assets/${file}`));
+          await getColorFromURL(assetsPath);
 
-        if (colorPallet[0] === 255) {
-          console.log('not footprints', file);
-        } else if (colorPallet[0] === 4) {
-          console.log('footprints', file);
-        }
+        if (colorPallet[0] === 255) continue;
+
+        const footprintFileName = getImageName(file);
+        const base64Image = convertImageToBase64(assetsPath);
+
+        const res = await fetch(
+          `https://pokeapi.co/api/v2/pokemon/${footprintFileName}`,
+        );
+        const {
+          id,
+          name,
+          sprites: { front_default },
+        } = await res.json();
+
+        result.push({
+          pokedex: String(id),
+          name,
+          picture: front_default,
+          footprint: base64Image,
+        });
       }
-    });
-    const imagePath = join(__dirname, `/../../../assets/1.png`);
-    const colorPallet: FootprintsColor | NotFootprintsColor =
-      await getColorFromURL(imagePath);
 
-    const base =
-      'data:image/png;base64,' +
-      Buffer.from(readFileSync(imagePath)).toString('base64');
-    // const base = Buffer.from(readFileSync(imagePath)).toString('base64');
-    console.log(Buffer.from(base, 'base64').toString());
-    if (colorPallet[0] === 255) {
-      console.log('not footprints');
-    } else if (colorPallet[0] === 4) {
-      console.log('footprints');
-    }
-    // console.log(fileList);
+      this.pokemonRepository.create(
+        result as Prisma.PokemonCreateArgs['data'][],
+      );
+    });
   }
 }
