@@ -10,7 +10,25 @@ export class PokemonRepository {
     } catch (error) {
       console.log(error);
     }
-    // prismaClient.pokemon.findMany({ select: { pokedex: true } });
+  }
+
+  async getRandomRecordList(limit: number) {
+    const pokemonList = [];
+
+    for (let i = 1; i < limit; i++) {
+      const randomNamber = Math.floor(Math.random() * Math.floor(limit)) + 1;
+      pokemonList.push(
+        await prismaClient.pokemon.findUnique({
+          where: { pokedex: String(randomNamber) }, // 更新されてない
+        }),
+      );
+    }
+
+    const result = await prismaClient.pokemon.findMany({
+      where: {
+        pokedex: pokedexList,
+      },
+    });
   }
 
   async show() {
