@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 import { getColorFromURL } from 'color-thief-node';
 import { join } from 'path';
 import { PokemonRepository } from './pokemon.repository';
-import { readdir, promises } from 'fs';
+import { promises } from 'fs';
 import { convertImageToBase64, getAssetsPath, getImageName } from '../../util';
 import { Injectable } from '@nestjs/common';
 import { Pokemon } from '@prisma/client';
@@ -10,9 +10,9 @@ import { Pokemon } from '@prisma/client';
 type FootprintsColor = [4, 4, 4];
 type NotFootprintsColor = [255, 255, 255];
 
-// @Injectable()
+@Injectable()
 export class PokemonService {
-  constructor(private readonly pokemonRepository: PokemonRepository) {}
+  constructor(private pokemonRepository: PokemonRepository) {}
 
   async init() {
     const fileList = await promises.readdir(
@@ -48,6 +48,12 @@ export class PokemonService {
 
     const pokemonList = await Promise.all(resultList);
     await this.pokemonRepository.create(pokemonList);
+  }
+
+  async getPokemon(pokedex: Pokemon['pokedex']) {
+    const pokemon = this.pokemonRepository.getPokedexRecord(pokedex);
+
+    return pokemon;
   }
 
   async createQuizList(maxCount: number, randomLimit: number) {

@@ -1,0 +1,69 @@
+openapi: 3.0.3
+info:
+  title: Swagger Petstore - OpenAPI 3.0
+  description: ポケモンの足跡クイズAPI
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: pokemon
+    description: ポケモンに関する情報を返すエンドポイント
+paths:
+  /pokemon/pokedex/:
+    get:
+      summary: "ポケモン図鑑から取得"
+      tags:
+        - pokemon
+      parameters:
+        - name: no
+          in: query
+          description: "図鑑Noを指定"
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                    example:
+                      pokedex: string
+                      name: string
+                      picture: url
+                      footprint: base64
+  /pokemon/quiz/:
+    get:
+      summary: "ポケモン足跡Quiz"
+      description: "No.1から指定した図鑑Noまでのポケモン足跡Quizを返す"
+      tags:
+        - pokemon
+      parameters:
+        - name: between
+          in: query
+          description: "図鑑No"
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            applicaion/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      example:
+                        pokedex: string
+                        name: string
+                        picture: url
+                        footprint: base64
+                        isCorrect: boolean

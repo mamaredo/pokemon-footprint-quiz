@@ -6,11 +6,7 @@ async function init() {
   const pokemonRepository = new PokemonRepository();
   const pokemonService = new PokemonService(pokemonRepository);
 
-  await Promise.all([
-    pokemonService.init(),
-    pokemonRepository.show(),
-    pokemonRepository.allDelete(),
-  ]);
+  await pokemonService.init();
 }
 
 init()

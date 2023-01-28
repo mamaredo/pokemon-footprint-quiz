@@ -1,4 +1,4 @@
-import { Pokemon, Prisma } from '@prisma/client';
+import { Pokemon } from '@prisma/client';
 import { prismaClient } from '../../lib/prisma';
 
 const createRandomValue = (randomLimit: number, arr: number[]) => {
@@ -28,10 +28,22 @@ export class PokemonRepository {
     }
   }
 
+  async getPokedexRecord(pokedex: Pokemon['pokedex']) {
+    const pokemon = await prismaClient.pokemon.findUnique({
+      where: { pokedex: pokedex },
+    });
+
+    return pokemon;
+  }
+
   async getRandomRecordList(
     maxCount: number,
     randomLimit: number,
   ): Promise<Pokemon[]> {
+    if (maxCount > randomLimit) {
+      console.error('maxCount > randomLimit');
+      return;
+    }
     const searchPokdexList = createRandomArray(maxCount, randomLimit);
 
     const result = searchPokdexList.map(async (pokedex) =>
