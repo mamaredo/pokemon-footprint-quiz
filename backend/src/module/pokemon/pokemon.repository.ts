@@ -8,7 +8,7 @@ const createRandomValue = (randomLimit: number, arr: number[]) => {
   return randomValue;
 };
 
-const createRandomArray = (maxCount: number, randomLimit: number) => {
+const createRandomValueList = (maxCount: number, randomLimit: number) => {
   const randomArray = [...Array(maxCount)].fill(0);
   for (let i = 0; i < maxCount; i++) {
     randomArray[i] = createRandomValue(randomLimit, randomArray);
@@ -44,7 +44,7 @@ export class PokemonRepository {
       console.error('maxCount > randomLimit');
       return;
     }
-    const searchPokdexList = createRandomArray(maxCount, randomLimit);
+    const searchPokdexList = createRandomValueList(maxCount, randomLimit);
 
     const result = searchPokdexList.map(async (pokedex) =>
       prismaClient.pokemon.findMany({
