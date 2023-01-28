@@ -1,16 +1,16 @@
 import { prismaClient } from './lib/prisma';
-import { PokemonService } from './module/pokemon';
+import { PokemonService } from './module/pokemon/pokemon.service';
 import { PokemonRepository } from './module/pokemon/pokemon.repository';
-
-// const prisma = new PrismaClient();
 
 async function init() {
   const pokemonRepository = new PokemonRepository();
   const pokemonService = new PokemonService(pokemonRepository);
 
-  await pokemonService.init();
-  await pokemonRepository.show();
-  await pokemonRepository.allDelete();
+  await Promise.all([
+    pokemonService.init(),
+    pokemonRepository.show(),
+    pokemonRepository.allDelete(),
+  ]);
 }
 
 init()

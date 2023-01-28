@@ -1,8 +1,8 @@
-import { Prisma } from '@prisma/client';
+import { Pokemon, Prisma } from '@prisma/client';
 import { prismaClient } from '../../lib/prisma';
 
 export class PokemonRepository {
-  async create(data: Prisma.PokemonCreateArgs['data'][]) {
+  async create(data: Pokemon[]) {
     try {
       await prismaClient.pokemon.createMany({
         data: data,
@@ -12,23 +12,18 @@ export class PokemonRepository {
     }
   }
 
-  async getRandomRecordList(limit: number) {
-    const pokemonList = [];
+  async getRandomRecordList(maxCount: number, randomLimit: number) {
+    const searchPokdexList = [...Array(maxCount)].map(
+      () => Math.floor(Math.random() * Math.floor(randomLimit)) + 1,
+    );
 
-    for (let i = 1; i < limit; i++) {
-      const randomNamber = Math.floor(Math.random() * Math.floor(limit)) + 1;
-      pokemonList.push(
-        await prismaClient.pokemon.findUnique({
-          where: { pokedex: String(randomNamber) }, // 更新されてない
-        }),
-      );
-    }
+    const result = searchPokdexList.map(async (pokedex) =>
+      prismaClient.pokemon.findMany({
+        where: { pokedex: String(pokedex) },
+      }),
+    );
 
-    const result = await prismaClient.pokemon.findMany({
-      where: {
-        pokedex: pokedexList,
-      },
-    });
+    return await Promise.all(result);
   }
 
   async show() {

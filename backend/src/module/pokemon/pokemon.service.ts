@@ -2,51 +2,85 @@ import fetch from 'node-fetch';
 import { getColorFromURL } from 'color-thief-node';
 import { join } from 'path';
 import { PokemonRepository } from './pokemon.repository';
-import { readdir } from 'fs';
+import { readdir, promises } from 'fs';
 import { convertImageToBase64, getAssetsPath, getImageName } from '../../util';
-import { Prisma } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { Pokemon } from '@prisma/client';
 
 type FootprintsColor = [4, 4, 4];
 type NotFootprintsColor = [255, 255, 255];
 
+// @Injectable()
 export class PokemonService {
   constructor(private readonly pokemonRepository: PokemonRepository) {}
 
   async init() {
-    const result = [];
-    readdir(join(__dirname, '/../../../assets'), async (err, fileList) => {
-      if (err) return;
+    const fileList = await promises.readdir(
+      join(__dirname, '/../../../assets'),
+    );
 
-      for (const file of fileList) {
-        const assetsPath = getAssetsPath(file);
-        const colorPallet: FootprintsColor | NotFootprintsColor =
-          await getColorFromURL(assetsPath);
+    const resultList: Promise<Pokemon>[] = fileList.map(async (file) => {
+      const assetsPath = getAssetsPath(file);
+      const colorPallet: FootprintsColor | NotFootprintsColor =
+        await getColorFromURL(assetsPath);
 
-        if (colorPallet[0] === 255) continue;
+      if (colorPallet[0] === 255) return;
 
-        const footprintFileName = getImageName(file);
-        const base64Image = convertImageToBase64(assetsPath);
+      const footprintFileName = getImageName(file);
+      const base64Image = convertImageToBase64(assetsPath);
 
-        const res = await fetch(
-          `https://pokeapi.co/api/v2/pokemon/${footprintFileName}`,
-        );
-        const {
-          id,
-          name,
-          sprites: { front_default },
-        } = await res.json();
-
-        result.push({
-          pokedex: String(id),
-          name,
-          picture: front_default,
-          footprint: base64Image,
-        });
-      }
-
-      this.pokemonRepository.create(
-        result as Prisma.PokemonCreateArgs['data'][],
+      const res = await fetch(
+        `https://pokeapi.co/api/v2/pokemon/${footprintFileName}`,
       );
+      const {
+        id,
+        name,
+        sprites: { front_default },
+      } = await res.json();
+
+      return {
+        pokedex: String(id),
+        name,
+        picture: front_default,
+        footprint: base64Image,
+      };
     });
+
+    const pokemonList = await Promise.all(resultList);
+    await this.pokemonRepository.create(pokemonList);
+
+    // readdir(join(__dirname, '/../../../assets'), async (err, fileList) => {
+    //   if (err) return;
+
+    //   const resultList: Promise<Pokemon>[] = fileList.map(async (file) => {
+    //     const assetsPath = getAssetsPath(file);
+    //     const colorPallet: FootprintsColor | NotFootprintsColor =
+    //       await getColorFromURL(assetsPath);
+
+    //     if (colorPallet[0] === 255) return;
+
+    //     const footprintFileName = getImageName(file);
+    //     const base64Image = convertImageToBase64(assetsPath);
+
+    //     const res = await fetch(
+    //       `https://pokeapi.co/api/v2/pokemon/${footprintFileName}`,
+    //     );
+    //     const {
+    //       id,
+    //       name,
+    //       sprites: { front_default },
+    //     } = await res.json();
+
+    //     return {
+    //       pokedex: String(id),
+    //       name,
+    //       picture: front_default,
+    //       footprint: base64Image,
+    //     };
+    //   });
+
+    //   const pokemonList = await Promise.all(resultList);
+    //   this.pokemonRepository.create(pokemonList);
+    // });
   }
 }
