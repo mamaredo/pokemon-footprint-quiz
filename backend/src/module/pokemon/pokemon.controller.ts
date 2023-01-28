@@ -3,7 +3,7 @@ import { Param } from '@nestjs/common/decorators';
 import { PokemonService } from './pokemon.service';
 
 @Controller('pokemon')
-export class AppController {
+export class PokemonController {
   constructor(private readonly pokemonService: PokemonService) {}
 
   @Get(':pokedex')
